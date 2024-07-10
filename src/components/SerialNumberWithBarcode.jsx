@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Barcode from 'react-barcode';
 import jsPDF from 'jspdf';
 import domtoimage from 'dom-to-image';
@@ -9,6 +9,13 @@ const SerialNumberWithBarcode = () => {
     const [serialNumbers, setSerialNumbers] = useState([]);
     const [companyName, setCompanyName] = useState('Shakib Electronics'); // Default company name
     const barcodeRefs = useRef([]);
+    const [isGenerate, setIsGenerate] = useState(false);
+
+    useEffect(() => {
+        if (isGenerate) {
+            generatePDF();
+        }
+    }, [isGenerate]);
 
     const generateSerialNumbers = () => {
         const numbers = [];
@@ -81,9 +88,11 @@ const SerialNumberWithBarcode = () => {
                 doc.save(
                     `generated_barcodes-${moment(Date.now()).format('MM-D-YYYY-h:mm:ss-a')}.pdf`
                 );
+                setIsGenerate(false);
             })
             .catch((error) => {
                 console.error('Error generating PDF:', error);
+                setIsGenerate(false);
             });
     };
 
@@ -117,16 +126,19 @@ const SerialNumberWithBarcode = () => {
             </div>
             <button
                 onClick={generateSerialNumbers}
-                className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none mr-2'
+                className={`px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none mr-2`}
             >
                 Generate Barcodes
             </button>
             {serialNumbers.length > 0 && (
                 <button
-                    onClick={generatePDF}
-                    className='px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none'
+                    onClick={() => setIsGenerate(true)}
+                    disabled={isGenerate} // Disable button when generating
+                    className={`${
+                        isGenerate ? 'bg-slate-400' : 'bg-green-500'
+                    } px-4 py-2 text-white rounded-md hover:bg-green-600 focus:outline-none`}
                 >
-                    Generate PDF
+                    {isGenerate ? 'Generating' : 'Generate PDF'}
                 </button>
             )}
 
